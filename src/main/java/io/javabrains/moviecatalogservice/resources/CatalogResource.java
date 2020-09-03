@@ -5,6 +5,8 @@ import io.javabrains.moviecatalogservice.models.CatalogItem;
 import io.javabrains.moviecatalogservice.models.Movie;
 import io.javabrains.moviecatalogservice.models.Rating;
 import io.javabrains.moviecatalogservice.models.UserRating;
+import io.javabrains.moviecatalogservice.services.MovieInfo;
+import io.javabrains.moviecatalogservice.services.UserRatingInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,49 +27,32 @@ public class CatalogResource {
 
     @Autowired
     private WebClient.Builder webClientBuilder;
+
+    @Autowired
+    MovieInfo movieInfo;
+
+    @Autowired
+    UserRatingInfo userRatingInfo;
+
     private UserRating ratings;
 
 
     @RequestMapping("/{userId}")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
 
-        UserRating ratings = getUserRatings(userId);
+        UserRating ratings = userRatingInfo.getUserRatings(userId);
         return ratings.getRatings().stream().map(
                 rating -> {
                     // for each movie id , call movie info service and get details
-                    return getCatalogItem(rating);
+                    return movieInfo.getCatalogItem(rating);
                 }
         ).collect(Collectors.toList());
 
     }
 
-    @HystrixCommand(fallbackMethod = "getFallbackCatalogItem")
-    private CatalogItem getCatalogItem(Rating rating) {
-        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
-        //Put them together
-        return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
-    }
-
-    private CatalogItem getFallbackCatalogItem(Rating rating) {
-        return new CatalogItem("Movie name not found", "", rating.getRating());
-    }
-
-    @HystrixCommand(fallbackMethod = "getFallBackUserRating")
-    private UserRating getUserRatings(@PathVariable("userId") String userId) {
-        return restTemplate.getForObject("http://ratings-data-service/ratingsdata/users/" + userId, UserRating.class);
-    }
-
-
-    private UserRating getFallBackUserRating(@PathVariable("userId") String userId) {
-      UserRating userRating = new UserRating();
-      userRating.setUserId(userId);
-      userRating.setRatings(Arrays.asList(
-              new Rating("0",0)
-      ));
-      return  userRating;
-    }
 
 }
+
   /* Movie movie =webClientBuilder.build() // For Sping FLUX
                 .get()
                 .uri("http://localhost:8082/movies/" + rating.getMovieId())
