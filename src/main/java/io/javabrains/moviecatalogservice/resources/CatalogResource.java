@@ -8,6 +8,7 @@ import io.javabrains.moviecatalogservice.models.UserRating;
 import io.javabrains.moviecatalogservice.services.MovieInfo;
 import io.javabrains.moviecatalogservice.services.UserRatingInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +35,9 @@ public class CatalogResource {
     @Autowired
     UserRatingInfo userRatingInfo;
 
+    @Value("${my.test:Default hello world}")
+    private String getHelloWorld;
+
     private UserRating ratings;
 
 
@@ -48,6 +52,11 @@ public class CatalogResource {
                 }
         ).collect(Collectors.toList());
 
+    }
+
+    @RequestMapping("/hello")
+    public String getGetHelloWorld(){
+        return  getHelloWorld;
     }
 
 
