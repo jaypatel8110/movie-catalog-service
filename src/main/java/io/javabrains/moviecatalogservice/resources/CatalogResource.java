@@ -35,9 +35,6 @@ public class CatalogResource {
     @Autowired
     UserRatingInfo userRatingInfo;
 
-    @Value("${my.test:Default hello world}")
-    private String getHelloWorld;
-
     private UserRating ratings;
 
 
@@ -54,10 +51,6 @@ public class CatalogResource {
 
     }
 
-    @RequestMapping("/hello")
-    public String getGetHelloWorld(){
-        return  getHelloWorld;
-    }
 
 
 }
